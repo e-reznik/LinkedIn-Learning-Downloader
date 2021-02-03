@@ -9,13 +9,13 @@ This software automatically downloads and saves all videos of a specific lecture
 3. Download this program
 4. Find the method `main` and edit the URL of your course:
     ```java
-    public static void main(String[] args) throws IOException, InterruptedException {
+    public static void main(String[] args) throws IOException {
         final String COURSE = "https://www.linkedin.com/learning/craft-a-great-github-profile/";
 
-        Login l = new Login();
-        l.loginToLI(COURSE);
+        Authenticator authenticator = new Authenticator();
+        authenticator.login(COURSE);
 
-    } 
+    }
     ```
 5. Specify your credentials and your directory in the class `Constants`:
     ```java
