@@ -1,25 +1,24 @@
 package app;
 
 import helper.Constants;
+import static helper.Constants.URLLOGIN;
+import static helper.Constants.USERNAME;
+import static helper.Constants.driver;
 import java.io.IOException;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.firefox.FirefoxDriver;
 
 import java.util.concurrent.TimeUnit;
 
 public class Login {
 
     public void loginToLI(String COURSE) throws IOException {
-        final WebDriver driver = new FirefoxDriver();
-
-        driver.get(Constants.URLLOGIN);
+        driver.get(URLLOGIN);
         driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
-        
+
         WebElement elemUsername = driver.findElement(By.id("auth-id-input"));
-        elemUsername.sendKeys(Constants.USERNAME);
+        elemUsername.sendKeys(USERNAME);
 
         WebElement button = driver.findElement(By.id("auth-id-button"));
 
@@ -37,6 +36,6 @@ public class Login {
 
         driver.get(COURSE);
 
-        Downloader d = new Downloader(driver, COURSE);
+        Downloader d = new Downloader();
     }
 }

@@ -1,9 +1,10 @@
 package app;
 
+import static helper.Constants.BASEDIR;
+import static helper.Constants.driver;
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
 import java.io.File;
@@ -21,27 +22,22 @@ import java.util.logging.Logger;
 public class Downloader {
 
     private static final Logger LOGGER = Logger.getLogger(Downloader.class.getName());
-    private final String BASEDIR = "/home/evgenij/learningVids/";
-    private final String COURSETITLE;
 
+    private final String COURSETITLE;
     private final Map<String, List<String>> chapterLecturesMap = new HashMap();
 
-    private final WebDriver driver1;
-
-    public Downloader(WebDriver driver1, String baseUrl) throws IOException {
-        this.driver1 = driver1;
-        driver1.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
-
-        COURSETITLE = driver1.findElement(By.tagName("h1")).getText();
-        createVideoStructure(baseUrl);
+    public Downloader() throws IOException {
+        driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+        COURSETITLE = driver.findElement(By.tagName("h1")).getText();
+        createVideoStructure();
     }
 
-    private void createVideoStructure(String baseUrl) throws IOException {
-        List<WebElement> allContents = driver1.findElements(By.xpath("//section[contains(@class, 'classroom-toc-chapter')]"));
+    private void createVideoStructure() throws IOException {
+        List<WebElement> allContents = driver.findElements(By.xpath("//section[contains(@class, 'classroom-toc-chapter')]"));
 
         for (WebElement e : allContents) {
             WebElement chapter = e.findElement(By.xpath(".//span[contains(@class, 'classroom-toc-chapter__toggle-title')]"));
-            chapterLecturesMap.put(chapter.getText(), new ArrayList<String>());
+            chapterLecturesMap.put(chapter.getText(), new ArrayList<>());
 
             List<WebElement> videos = e.findElements(By.xpath(".//a[contains(@class, 'toc-item')]"));
 
@@ -61,7 +57,7 @@ public class Downloader {
             createDirectory(COURSETITLE + "/" + chapter);
             // Index is needed for the number of the current video (lecture)
             for (int i = 0; i < map.get(chapter).size(); i++) {
-                findVideoUrl(chapter, map.get(chapter).get(i), i+1);
+                findVideoUrl(chapter, map.get(chapter).get(i), i + 1);
             }
         }
     }
@@ -75,20 +71,20 @@ public class Downloader {
 
     private void findVideoUrl(String chapter, String lectureUrl, int currentIndex) throws IOException {
         List<String> errorVideos = new ArrayList<>();
-        driver1.get(lectureUrl);
+        driver.get(lectureUrl);
 
-        JavascriptExecutor js = (JavascriptExecutor) driver1;
+        JavascriptExecutor js = (JavascriptExecutor) driver;
         js.executeScript("return window.stop");
 
         // TODO: Find a more elegant solution
         try {
-            Thread.sleep(500);
+            Thread.sleep(1000);
         } catch (InterruptedException ex) {
             LOGGER.log(Level.WARNING, "Error while sleeping", ex);
         }
 
-        WebElement linkToVideo = driver1.findElement(By.tagName("video"));
-        String videoTitle = driver1.getTitle();
+        WebElement linkToVideo = driver.findElement(By.tagName("video"));
+        String videoTitle = driver.getTitle();
         String videoUrl = linkToVideo.getAttribute("src");
 
         if (videoUrl.isBlank()) {
@@ -115,6 +111,6 @@ public class Downloader {
     }
 
     private void iterateErrorVideos(List<String> errorVideos) {
-        LOGGER.log(Level.INFO, "The following videos could not been downloaded:" + errorVideos.toArray());
+        LOGGER.log(Level.INFO, "The following videos could not been downloaded:{0}", errorVideos.toArray());
     }
 }
