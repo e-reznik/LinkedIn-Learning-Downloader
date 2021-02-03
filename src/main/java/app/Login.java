@@ -36,6 +36,7 @@ public class Login {
 
         driver.get(COURSE);
 
-        Downloader d = new Downloader();
+        Downloader downloader = new Downloader();
+        downloader.download();
     }
 }

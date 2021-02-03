@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.sound.sampled.AudioInputStream;
@@ -27,17 +26,25 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 public class Downloader {
 
     private static final Logger LOGGER = Logger.getLogger(Downloader.class.getName());
+    private String COURSETITLE;
+    private final List<String> errorVideos = new ArrayList<>();
 
-    private final String COURSETITLE;
-    private final Map<String, List<String>> chapterLecturesMap = new HashMap();
-
-    public Downloader() throws IOException {
-        driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+    public void download() throws IOException {
         COURSETITLE = driver.findElement(By.tagName("h1")).getText();
-        createVideoStructure();
+
+        final Map<String, List<String>> chapterLecturesMap = createVideoStructure();
+        iterate(chapterLecturesMap);
+
+        if (!errorVideos.isEmpty()) {
+            LOGGER.log(Level.INFO, "The following videos could not been downloaded: {0}\nYou can download them manually.", errorVideos.toArray());
+        } else {
+            LOGGER.log(Level.INFO, "All videos have been downloaded successfully: {0}", errorVideos.size());
+        }
+        playSound();
     }
 
-    private void createVideoStructure() throws IOException {
+    private Map<String, List<String>> createVideoStructure() throws IOException {
+        Map<String, List<String>> chapterLecturesMap = new HashMap();
         List<WebElement> allContents = driver.findElements(By.xpath("//section[contains(@class, 'classroom-toc-chapter')]"));
 
         for (WebElement e : allContents) {
@@ -54,7 +61,7 @@ public class Downloader {
         }
         createDirectory(COURSETITLE);
 
-        iterate(chapterLecturesMap);
+        return chapterLecturesMap;
     }
 
     private void iterate(Map<String, List<String>> map) throws IOException {
@@ -75,7 +82,6 @@ public class Downloader {
     }
 
     private void findVideoUrl(String chapter, String lectureUrl, int currentIndex) throws IOException {
-        List<String> errorVideos = new ArrayList<>();
         driver.get(lectureUrl);
 
         JavascriptExecutor js = (JavascriptExecutor) driver;
@@ -83,7 +89,7 @@ public class Downloader {
 
         // TODO: Find a more elegant solution
         try {
-            Thread.sleep(1000);
+            Thread.sleep(700);
         } catch (InterruptedException ex) {
             LOGGER.log(Level.WARNING, "Error while sleeping", ex);
         }
@@ -99,27 +105,17 @@ public class Downloader {
             downloadVideo(chapter, currentIndex, videoTitle, videoUrl);
         }
 
-        if (!errorVideos.isEmpty()) {
-            iterateErrorVideos(errorVideos);
-        } else {
-            LOGGER.log(Level.INFO, "All videos have been downloaded successfully!");
-        }
-        playSound();
     }
 
     private void downloadVideo(String chapter, int currentIndex, String videoTitle, String videoUrl) {
         try {
             FileUtils.copyURLToFile(new URL(videoUrl),
-                    new File("/home/evgenij/learningVids/" + COURSETITLE + "/" + chapter + "/" + currentIndex + ". " + videoTitle + ".mp4"), 5000, 5000);
+                    new File(BASEDIR + COURSETITLE + "/" + chapter + "/" + currentIndex + ". " + videoTitle + ".mp4"), 5000, 5000);
         } catch (MalformedURLException ex) {
             Logger.getLogger(Downloader.class.getName()).log(Level.SEVERE, videoUrl, ex);
         } catch (IOException ex) {
             Logger.getLogger(Downloader.class.getName()).log(Level.SEVERE, videoUrl, ex);
         }
-    }
-
-    private void iterateErrorVideos(List<String> errorVideos) {
-        LOGGER.log(Level.INFO, "The following videos could not been downloaded: {0}\nYou can download them manually.", errorVideos.toArray());
     }
 
     private void playSound() {
