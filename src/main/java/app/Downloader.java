@@ -18,6 +18,11 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
 
 public class Downloader {
 
@@ -96,7 +101,10 @@ public class Downloader {
 
         if (!errorVideos.isEmpty()) {
             iterateErrorVideos(errorVideos);
+        } else {
+            LOGGER.log(Level.INFO, "All videos have been downloaded successfully!");
         }
+        playSound();
     }
 
     private void downloadVideo(String chapter, int currentIndex, String videoTitle, String videoUrl) {
@@ -111,6 +119,26 @@ public class Downloader {
     }
 
     private void iterateErrorVideos(List<String> errorVideos) {
-        LOGGER.log(Level.INFO, "The following videos could not been downloaded:{0}", errorVideos.toArray());
+        LOGGER.log(Level.INFO, "The following videos could not been downloaded: {0}\nYou can download them manually.", errorVideos.toArray());
+    }
+
+    private void playSound() {
+        AudioInputStream audioInputStream = null;
+        String audioName = "beep.wav";
+        try {
+            audioInputStream = AudioSystem.getAudioInputStream(getClass().getClassLoader().getResourceAsStream(audioName));
+            Clip clip = AudioSystem.getClip();
+            clip.open(audioInputStream);
+            clip.start();
+            Thread.sleep(clip.getMicrosecondLength() / 1000);
+        } catch (UnsupportedAudioFileException | IOException | LineUnavailableException | InterruptedException ex) {
+            LOGGER.log(Level.SEVERE, null, ex);
+        } finally {
+            try {
+                audioInputStream.close();
+            } catch (IOException ex) {
+                LOGGER.log(Level.SEVERE, null, ex);
+            }
+        }
     }
 }
