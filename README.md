@@ -1,6 +1,6 @@
 ![Java CI with Maven](https://github.com/e-reznik/LinkedIn-Learning-Downloader/workflows/Java%20CI%20with%20Maven/badge.svg)
 
-This software automatically downloads and saves all videos of a specific lecture from [LinkedIn Learning](https://www.linkedin.com/learning/me).
+This software automatically downloads and saves all videos of a specific lecture from [LinkedIn Learning](https://www.linkedin.com/learning/me). A subscription is necessary, to login and parse the structure.
 
 ## Example Usage
 
@@ -30,6 +30,11 @@ This software automatically downloads and saves all videos of a specific lecture
     ```
 6. Run your program
 
+## Result
+
+As you can see, even the proper folder structure will be maintained:
+
+![linkedIn](https://user-images.githubusercontent.com/55981254/106777065-f0482000-6644-11eb-928e-c57d21560f49.png)
 
 
 *Note: I created this program for educational purposes only! Use at your own risk!*
