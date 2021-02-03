@@ -18,7 +18,6 @@ This software automatically downloads and saves all videos of a specific lecture
     } 
     ```
 5. Specify your credentials and your directory in the class `Constants`:
-public class Constants {
     ```java
       public class Constants {
 
