@@ -1,5 +1,6 @@
 package app;
 
+import static helper.Constants.AUDIONAME;
 import static helper.Constants.BASEDIR;
 import static helper.Constants.driver;
 import org.apache.commons.io.FileUtils;
@@ -38,7 +39,7 @@ public class Downloader {
         if (!errorVideos.isEmpty()) {
             LOGGER.log(Level.INFO, "The following videos could not been downloaded: {0}\nYou can download them manually.", errorVideos.toArray());
         } else {
-            LOGGER.log(Level.INFO, "All videos have been downloaded successfully: {0}", errorVideos.size());
+            LOGGER.log(Level.INFO, "All videos have been downloaded successfully: {0} Errors.", errorVideos.size());
         }
         playSound();
     }
@@ -120,9 +121,8 @@ public class Downloader {
 
     private void playSound() {
         AudioInputStream audioInputStream = null;
-        String audioName = "beep.wav";
         try {
-            audioInputStream = AudioSystem.getAudioInputStream(getClass().getClassLoader().getResourceAsStream(audioName));
+            audioInputStream = AudioSystem.getAudioInputStream(getClass().getClassLoader().getResourceAsStream(AUDIONAME));
             Clip clip = AudioSystem.getClip();
             clip.open(audioInputStream);
             clip.start();
