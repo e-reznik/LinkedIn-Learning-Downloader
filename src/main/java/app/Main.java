@@ -4,12 +4,11 @@ import java.io.IOException;
 
 public class Main {
 
-    public static void main(String[] args) throws IOException, InterruptedException {
-        final String COURSE = "https://www.linkedin.com/learning/secure-coding-in-java/";
+    public static void main(String[] args) throws IOException {
+        final String COURSE = "https://www.linkedin.com/learning/craft-a-great-github-profile/";
 
-        Login l = new Login();
-        l.loginToLI(COURSE);
+        Authenticator authenticator = new Authenticator();
+        authenticator.login(COURSE);
 
     }
-
 }
