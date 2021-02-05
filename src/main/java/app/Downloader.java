@@ -1,8 +1,10 @@
 package app;
 
-import static helper.Constants.AUDIONAME;
+import static helper.Constants.AUDIOFAIL;
+import static helper.Constants.AUDIOSUCCESS;
 import static helper.Constants.BASEDIR;
-import static helper.Constants.driver;
+import static helper.Constants.SLEEPTIME;
+import static helper.Constants.WEBDRIVER;
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
@@ -30,22 +32,23 @@ public class Downloader {
     private final List<String> errorVideos = new ArrayList<>();
 
     public void download() throws IOException {
-        courseTitle = driver.findElement(By.tagName("h1")).getText();
+        courseTitle = WEBDRIVER.findElement(By.tagName("h1")).getText();
 
         final Map<String, List<String>> chapterLecturesMap = createVideoStructure();
         iterate(chapterLecturesMap);
 
-        if (!errorVideos.isEmpty()) {
-            LOGGER.log(Level.INFO, "The following videos could not been downloaded: {0}\nYou can download them manually.", errorVideos.toArray());
-        } else {
+        if (errorVideos.isEmpty()) {
+            playSound(true);
             LOGGER.log(Level.INFO, "All videos have been downloaded successfully: {0} Errors.", errorVideos.size());
+        } else {
+            playSound(false);
+            LOGGER.log(Level.INFO, "The following videos could not been downloaded: {0}\nYou can download them manually.", errorVideos.toArray());
         }
-        playSound();
     }
 
     private Map<String, List<String>> createVideoStructure() {
         Map<String, List<String>> chapterLecturesMap = new HashMap<>();
-        List<WebElement> allContents = driver.findElements(By.xpath("//section[contains(@class, 'classroom-toc-chapter')]"));
+        List<WebElement> allContents = WEBDRIVER.findElements(By.xpath("//section[contains(@class, 'classroom-toc-chapter')]"));
 
         for (WebElement e : allContents) {
             WebElement chapter = e.findElement(By.xpath(".//span[contains(@class, 'classroom-toc-chapter__toggle-title')]"));
@@ -75,36 +78,37 @@ public class Downloader {
     }
 
     private void createDirectory(String dir) {
-        File directory = new File(BASEDIR + dir);
+        File directory = new File(BASEDIR + dir.replaceAll("[^a-zA-Z0-9\\.\\-]", "_"));
+
         if (!directory.exists()) {
             directory.mkdir();
         }
     }
 
     private void findVideoUrl(String chapter, String lectureUrl, int currentIndex) {
-        driver.get(lectureUrl);
+        WEBDRIVER.get(lectureUrl);
 
-        JavascriptExecutor js = (JavascriptExecutor) driver;
+        JavascriptExecutor js = (JavascriptExecutor) WEBDRIVER;
         js.executeScript("return window.stop");
 
         // TODO: Find a more elegant solution
         try {
-            Thread.sleep(700);
+            Thread.sleep(SLEEPTIME);
         } catch (InterruptedException ex) {
             LOGGER.log(Level.WARNING, "Error while sleeping", ex);
         }
 
-        WebElement linkToVideo = driver.findElement(By.tagName("video"));
-        String videoTitle = driver.getTitle();
+        WebElement linkToVideo = WEBDRIVER.findElement(By.tagName("video"));
+        String videoTitle = WEBDRIVER.getTitle();
         String videoUrl = linkToVideo.getAttribute("src");
 
         if (videoUrl.isBlank()) {
             errorVideos.add(videoTitle);
-            LOGGER.log(Level.WARNING, "Video: {0} could not be downloaded: {1}", new String[]{videoTitle, videoUrl});
+            //LOGGER.log(Level.WARNING, "Video: {0} could not be downloaded: {1}", new String[]{videoTitle, videoUrl});
         } else {
             downloadVideo(chapter, currentIndex, videoTitle, videoUrl);
+            LOGGER.log(Level.INFO, "URL: {0}", videoUrl);
         }
-
     }
 
     private void downloadVideo(String chapter, int currentIndex, String videoTitle, String videoUrl) {
@@ -112,16 +116,24 @@ public class Downloader {
             FileUtils.copyURLToFile(new URL(videoUrl),
                     new File(BASEDIR + courseTitle
                             + File.separatorChar + chapter
-                            + File.separatorChar + currentIndex + ". " + videoTitle + ".mp4"), 5000, 5000);
+                            + File.separatorChar + currentIndex + ". " + videoTitle.replaceAll("[^a-zA-Z0-9\\.\\-]", "_") + ".mp4"), 5000, 5000);
         } catch (IOException ex) {
             Logger.getLogger(Downloader.class.getName()).log(Level.SEVERE, videoUrl, ex);
         }
     }
 
-    private void playSound() {
+    private void playSound(boolean success) {
         AudioInputStream audioInputStream = null;
+        String audioName = null;
+
+        if (success) {
+            audioName = AUDIOSUCCESS;
+        } else {
+            audioName = AUDIOFAIL;
+        }
+
         try {
-            audioInputStream = AudioSystem.getAudioInputStream(getClass().getClassLoader().getResourceAsStream(AUDIONAME));
+            audioInputStream = AudioSystem.getAudioInputStream(getClass().getClassLoader().getResourceAsStream(audioName));
             Clip clip = AudioSystem.getClip();
             clip.open(audioInputStream);
             clip.start();
@@ -136,4 +148,5 @@ public class Downloader {
             }
         }
     }
+
 }
