@@ -1,6 +1,6 @@
 ![Java CI with Maven](https://github.com/e-reznik/LinkedIn-Learning-Downloader/workflows/Java%20CI%20with%20Maven/badge.svg)
 
-This software automatically downloads and saves all videos of a specific lecture from [LinkedIn Learning](https://www.linkedin.com/learning/me). A subscription is necessary, to login and parse the structure.
+This software automatically downloads and saves all videos of a specific course from [LinkedIn Learning](https://www.linkedin.com/learning/me). A subscription is necessary to login and parse the course structure.
 
 ## Example Usage
 
