@@ -3,7 +3,11 @@ package helper;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 
-public class Constants {
+public final class Constants {
+
+    private Constants() {
+
+    }
 
     public static final String USERNAME = "..."; // TODO: your LinkedIn username
     public static final String PASSWORD = "..."; // TODO: your LinkedIn password

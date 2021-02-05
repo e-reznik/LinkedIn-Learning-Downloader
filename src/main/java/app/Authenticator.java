@@ -12,8 +12,10 @@ import org.openqa.selenium.WebElement;
 import java.util.concurrent.TimeUnit;
 
 public class Authenticator {
+    
+    
 
-    public void login(String COURSE) throws IOException {
+    public void login(String course) throws IOException {
         driver.get(URLLOGIN);
         driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
 
@@ -34,7 +36,7 @@ public class Authenticator {
         WebElement button2 = driver.findElement(By.tagName("button"));
         button2.click();
 
-        driver.get(COURSE);
+        driver.get(course);
 
         Downloader downloader = new Downloader();
         downloader.download();

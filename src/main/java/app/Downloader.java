@@ -10,7 +10,6 @@ import org.openqa.selenium.WebElement;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,11 +26,11 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 public class Downloader {
 
     private static final Logger LOGGER = Logger.getLogger(Downloader.class.getName());
-    private String COURSETITLE;
+    private String courseTitle;
     private final List<String> errorVideos = new ArrayList<>();
 
     public void download() throws IOException {
-        COURSETITLE = driver.findElement(By.tagName("h1")).getText();
+        courseTitle = driver.findElement(By.tagName("h1")).getText();
 
         final Map<String, List<String>> chapterLecturesMap = createVideoStructure();
         iterate(chapterLecturesMap);
@@ -44,8 +43,8 @@ public class Downloader {
         playSound();
     }
 
-    private Map<String, List<String>> createVideoStructure() throws IOException {
-        Map<String, List<String>> chapterLecturesMap = new HashMap();
+    private Map<String, List<String>> createVideoStructure() {
+        Map<String, List<String>> chapterLecturesMap = new HashMap<>();
         List<WebElement> allContents = driver.findElements(By.xpath("//section[contains(@class, 'classroom-toc-chapter')]"));
 
         for (WebElement e : allContents) {
@@ -60,14 +59,14 @@ public class Downloader {
                 }
             }
         }
-        createDirectory(COURSETITLE);
+        createDirectory(courseTitle);
 
         return chapterLecturesMap;
     }
 
-    private void iterate(Map<String, List<String>> map) throws IOException {
+    private void iterate(Map<String, List<String>> map) {
         for (String chapter : map.keySet()) {
-            createDirectory(COURSETITLE + "/" + chapter);
+            createDirectory(courseTitle + "/" + chapter);
             // Index is needed for the number of the current video (lecture)
             for (int i = 0; i < map.get(chapter).size(); i++) {
                 findVideoUrl(chapter, map.get(chapter).get(i), i + 1);
@@ -82,7 +81,7 @@ public class Downloader {
         }
     }
 
-    private void findVideoUrl(String chapter, String lectureUrl, int currentIndex) throws IOException {
+    private void findVideoUrl(String chapter, String lectureUrl, int currentIndex) {
         driver.get(lectureUrl);
 
         JavascriptExecutor js = (JavascriptExecutor) driver;
@@ -111,9 +110,9 @@ public class Downloader {
     private void downloadVideo(String chapter, int currentIndex, String videoTitle, String videoUrl) {
         try {
             FileUtils.copyURLToFile(new URL(videoUrl),
-                    new File(BASEDIR + COURSETITLE + "/" + chapter + "/" + currentIndex + ". " + videoTitle + ".mp4"), 5000, 5000);
-        } catch (MalformedURLException ex) {
-            Logger.getLogger(Downloader.class.getName()).log(Level.SEVERE, videoUrl, ex);
+                    new File(BASEDIR + courseTitle
+                            + File.separatorChar + chapter
+                            + File.separatorChar + currentIndex + ". " + videoTitle + ".mp4"), 5000, 5000);
         } catch (IOException ex) {
             Logger.getLogger(Downloader.class.getName()).log(Level.SEVERE, videoUrl, ex);
         }
