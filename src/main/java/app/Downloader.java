@@ -31,7 +31,7 @@ public class Downloader {
     private String courseTitle;
     private final List<String> errorVideos = new ArrayList<>();
 
-    public void download() throws IOException {
+    public void download() {
         courseTitle = WEBDRIVER.findElement(By.tagName("h1")).getText();
 
         final Map<String, List<String>> chapterLecturesMap = createVideoStructure();
@@ -104,7 +104,6 @@ public class Downloader {
 
         if (videoUrl.isBlank()) {
             errorVideos.add(videoTitle);
-            //LOGGER.log(Level.WARNING, "Video: {0} could not be downloaded: {1}", new String[]{videoTitle, videoUrl});
         } else {
             downloadVideo(chapter, currentIndex, videoTitle, videoUrl);
             LOGGER.log(Level.INFO, "URL: {0}", videoUrl);
