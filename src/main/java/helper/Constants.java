@@ -22,4 +22,6 @@ public final class Constants {
 
     public static final int MAXBITRATE = 720;
     public static final int SLEEPTIME = 750;
+    
+    public static final String REGEXFILENAME = "[^a-zA-Z0-9\\.\\-\\ ]";
 }

@@ -3,6 +3,9 @@ package app;
 import static helper.Constants.AUDIOFAIL;
 import static helper.Constants.AUDIOSUCCESS;
 import static helper.Constants.BASEDIR;
+import static helper.Constants.JAVASCRIPTEXECUTOR;
+import static helper.Constants.MAXBITRATE;
+import static helper.Constants.REGEXFILENAME;
 import static helper.Constants.SLEEPTIME;
 import static helper.Constants.WEBDRIVER;
 import org.apache.commons.io.FileUtils;
@@ -33,6 +36,7 @@ public class Downloader {
 
     public void download() {
         courseTitle = WEBDRIVER.findElement(By.tagName("h1")).getText();
+        JAVASCRIPTEXECUTOR.executeScript("window.localStorage.setItem('learning:media-player-prefs','{\"quality-prog\":" + MAXBITRATE + "}')");
 
         final Map<String, List<String>> chapterLecturesMap = createVideoStructure();
         iterate(chapterLecturesMap);
@@ -52,13 +56,15 @@ public class Downloader {
 
         for (WebElement e : allContents) {
             WebElement chapter = e.findElement(By.xpath(".//span[contains(@class, 'classroom-toc-chapter__toggle-title')]"));
-            chapterLecturesMap.put(chapter.getText(), new ArrayList<>());
+            String chapterText = chapter.getText().replaceAll(REGEXFILENAME, "_");
+
+            chapterLecturesMap.put(chapterText, new ArrayList<>());
 
             List<WebElement> videos = e.findElements(By.xpath(".//a[contains(@class, 'toc-item')]"));
 
             for (WebElement v : videos) {
                 if (!v.getText().toLowerCase().contains("quiz")) {
-                    chapterLecturesMap.get(chapter.getText()).add(v.getAttribute("href"));
+                    chapterLecturesMap.get(chapterText).add(v.getAttribute("href"));
                 }
             }
         }
@@ -69,7 +75,7 @@ public class Downloader {
 
     private void iterate(Map<String, List<String>> map) {
         for (String chapter : map.keySet()) {
-            createDirectory(courseTitle + "/" + chapter);
+            createDirectory(courseTitle + File.separator + chapter);
             // Index is needed for the number of the current video (lecture)
             for (int i = 0; i < map.get(chapter).size(); i++) {
                 findVideoUrl(chapter, map.get(chapter).get(i), i + 1);
@@ -78,10 +84,11 @@ public class Downloader {
     }
 
     private void createDirectory(String dir) {
-        File directory = new File(BASEDIR + dir.replaceAll("[^a-zA-Z0-9\\.\\-]", "_"));
+        File directory = new File(BASEDIR + dir);
 
         if (!directory.exists()) {
             directory.mkdir();
+            LOGGER.log(Level.INFO, "Directory: {0}", dir);
         }
     }
 
@@ -102,23 +109,38 @@ public class Downloader {
         String videoTitle = WEBDRIVER.getTitle();
         String videoUrl = linkToVideo.getAttribute("src");
 
+        if (!videoUrl.contains("vbr-" + MAXBITRATE)) {
+            LOGGER.log(Level.SEVERE, "Video with less than {0} found. All downloads will be aborted! You can try it again.", MAXBITRATE);
+            playSound(false);
+            System.exit(0);
+        }
+
         if (videoUrl.isBlank()) {
             errorVideos.add(videoTitle);
         } else {
-            downloadVideo(chapter, currentIndex, videoTitle, videoUrl);
+            downloadVideo(chapter, currentIndex, videoTitle.replaceAll(REGEXFILENAME, "_"), videoUrl);
             LOGGER.log(Level.INFO, "URL: {0}", videoUrl);
         }
     }
 
     private void downloadVideo(String chapter, int currentIndex, String videoTitle, String videoUrl) {
         try {
-            FileUtils.copyURLToFile(new URL(videoUrl),
-                    new File(BASEDIR + courseTitle
-                            + File.separatorChar + chapter
-                            + File.separatorChar + currentIndex + ". " + videoTitle.replaceAll("[^a-zA-Z0-9\\.\\-]", "_") + ".mp4"), 5000, 5000);
+            File file = new File(BASEDIR + courseTitle
+                    + File.separator + chapter
+                    + File.separator + currentIndex + ". " + videoTitle + ".mp4");
+
+            FileUtils.copyURLToFile(new URL(videoUrl), file, 5000, 5000);
+
+            LOGGER.log(Level.INFO, "File: {0}", file);
+
         } catch (IOException ex) {
             Logger.getLogger(Downloader.class.getName()).log(Level.SEVERE, videoUrl, ex);
         }
+    }
+
+    public String replaceIllegaleCharacters(String file) {
+
+        return null;
     }
 
     private void playSound(boolean success) {
