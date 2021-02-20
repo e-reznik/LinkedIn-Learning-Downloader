@@ -48,6 +48,7 @@ public class Downloader {
             playSound(false);
             LOGGER.log(Level.INFO, "The following videos could not been downloaded: {0}\nYou can download them manually.", errorVideos.toArray());
         }
+        WEBDRIVER.quit();
     }
 
     private Map<String, List<String>> createVideoStructure() {
@@ -110,7 +111,8 @@ public class Downloader {
         String videoUrl = linkToVideo.getAttribute("src");
 
         if (!videoUrl.contains("vbr-" + MAXBITRATE)) {
-            LOGGER.log(Level.SEVERE, "Video with less than {0} found. All downloads will be aborted! You can try it again.", MAXBITRATE);
+            LOGGER.log(Level.SEVERE, "Video with less than {0} found: {1} All downloads will be aborted! You can try it again.",
+                    new Object[]{MAXBITRATE, videoUrl});
             playSound(false);
             System.exit(0);
         }
