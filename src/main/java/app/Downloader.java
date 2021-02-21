@@ -110,18 +110,23 @@ public class Downloader {
         String videoTitle = WEBDRIVER.getTitle();
         String videoUrl = linkToVideo.getAttribute("src");
 
-        if (!videoUrl.contains("vbr-" + MAXBITRATE)) {
-            LOGGER.log(Level.SEVERE, "Video with less than {0} found: {1} All downloads will be aborted! You can try it again.",
-                    new Object[]{MAXBITRATE, videoUrl});
-            playSound(false);
-            System.exit(0);
-        }
+        checkMaxBitrate(videoUrl);
 
         if (videoUrl.isBlank()) {
             errorVideos.add(videoTitle);
         } else {
             downloadVideo(chapter, currentIndex, videoTitle.replaceAll(REGEXFILENAME, "_"), videoUrl);
             LOGGER.log(Level.INFO, "URL: {0}", videoUrl);
+        }
+    }
+
+    private void checkMaxBitrate(String videoUrl) {
+        if (!videoUrl.contains("vbr-" + MAXBITRATE)) {
+            LOGGER.log(Level.SEVERE, "Video with less than {0} found: {1} All downloads will be aborted! You can try it again.",
+                    new Object[]{MAXBITRATE, videoUrl});
+            playSound(false);
+            WEBDRIVER.quit();
+            System.exit(0);
         }
     }
 
@@ -138,11 +143,6 @@ public class Downloader {
         } catch (IOException ex) {
             Logger.getLogger(Downloader.class.getName()).log(Level.SEVERE, videoUrl, ex);
         }
-    }
-
-    public String replaceIllegaleCharacters(String file) {
-
-        return null;
     }
 
     private void playSound(boolean success) {
