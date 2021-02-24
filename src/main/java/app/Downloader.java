@@ -53,10 +53,10 @@ public class Downloader {
 
     private Map<String, List<String>> createVideoStructure() {
         Map<String, List<String>> chapterLecturesMap = new HashMap<>();
-        List<WebElement> allContents = WEBDRIVER.findElements(By.xpath("//section[contains(@class, 'classroom-toc-chapter')]"));
+        List<WebElement> allContents = WEBDRIVER.findElements(By.xpath("//section[contains(@class, 'classroom-toc-section')]"));
 
         for (WebElement e : allContents) {
-            WebElement chapter = e.findElement(By.xpath(".//span[contains(@class, 'classroom-toc-chapter__toggle-title')]"));
+            WebElement chapter = e.findElement(By.xpath(".//span[contains(@class, 'classroom-toc-section__toggle-title')]"));
             String chapterText = chapter.getText().replaceAll(REGEXFILENAME, "_");
 
             chapterLecturesMap.put(chapterText, new ArrayList<>());
@@ -71,6 +71,10 @@ public class Downloader {
         }
         createDirectory(courseTitle);
 
+        if (chapterLecturesMap.isEmpty()) {
+            playSound(false);
+            throw new NullPointerException("The required page elements could not be found.");
+        }
         return chapterLecturesMap;
     }
 
